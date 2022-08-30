@@ -1,0 +1,213 @@
+# Typical laptop setup, with wifi, brightness, battery etc, for
+# i3/Sway.
+
+# For X11/i3, you'll want to replace calls to swaymsg with i3-msg, and
+# the sway-xkb module with the xkb module.
+
+# fonts we'll be re-using here and there
+awesome: &awesome Font Awesome 5 Free:style=solid:pixelsize=12
+awesome_brands: &awesome_brands Font Awesome 5 Brands:pixelsize=14
+robold: &robold Roboto Mono for Powerline:style=Bold:pixelsize=12
+
+std_underline: &std_underline {underline: { size: 2, color: ff0000ff}}
+
+# This is THE bar configuration
+bar:
+  height: 22
+  location: top 
+  spacing: 5
+  margin: 4
+  monitor: LVDS-1
+  layer: bottom
+
+  # Default font
+  font: Adobe Helvetica:pixelsize=11
+
+  foreground: ffffffff
+  background: 111111cc
+
+  border:
+    width: 3
+#    color: 999999cc
+    color: 005063ff 
+    margin: 4 
+    top-margin: 4 
+
+  left:
+    - label:
+        content:
+          string:
+            on-click: xfce4-appfinder
+            #/home/ahmad/bin/launcher
+            text: " Home" 
+            font: *awesome
+    - label:
+        content:
+          string:
+            on-click: /home/ahmad/.local/bin/wofi-shot5.sh  
+            text: "CAMERA"
+            font: *awesome
+    - label:
+        content:
+          string:
+            on-click: /home/ahmad/.local/bin/wofi-shot5.sh  
+            text: " "
+            font: *awesome
+    - label:
+        content:
+          string:
+            on-click: /home/ahmad/.config/hikari/workspace-chooser  
+            text: " "
+            font: *awesome
+    - script:
+        path: /home/ahmad/bin/hikari-workspace
+        args: []
+        content: {string: {text: "{workspace}"}}
+        font: *robold 
+  center:
+    - clock:
+        time-format: "%H:%M %A"
+        date-format: "%d/%m/%Y"
+        content:
+          #- string: {text: " ", font: *awesome}
+          - string: {text: "{date}", right-margin: 5}
+            #- string: {text: " ", font: *awesome}
+          - string: {text: "{time}"}
+
+  right:
+    - removables:
+        anchors:
+          drive: &drive { text: , font: *awesome}
+          optical: &optical {text: , font: *awesome}
+        spacing: 5
+        content:
+          map:
+            tag: mounted
+            values:
+              false:
+                map:
+                  tag: optical
+                  on-click: udisksctl mount -b {device}
+                  values:
+                    false: [{string: *drive}, {string: {text: "{label}"}}]
+                    true: [{string: *optical}, {string: {text: "{label}"}}]
+              true:
+                map:
+                  tag: optical
+                  on-click: udisksctl unmount -b {device}
+                  values:
+                    false:
+                      - string: {<<: *drive, deco: *std_underline}
+                      - string: {text: "{label}"}
+                    true:
+                      - string: {<<: *optical, deco: *std_underline}
+                      - string: {text: "{label}"}
+#    - sway-xkb:
+#        identifiers: [1:1:AT_Translated_Set_2_keyboard]
+#        content:
+#          - string: {text: , font: *awesome}
+#          - string: {text: "{layout}"}
+#    - label:
+#        content:
+#          string:
+#            on-click: foot sh -c "vim ~/.config/sway/config"  
+#            text: "🔧" 
+#            font: *awesome
+    - alsa:
+        card: hw:PCH
+        mixer: Master
+        content:
+          map:
+            on-click: /home/ahmad/.local/bin/zenpulse.sh   
+            tag: muted
+            values:
+              true: {string: {text: , font: *awesome, foreground: ffffff66}}
+              false:
+                ramp:
+                  tag: volume
+                  items:
+                    - string: {text: , font: *awesome}
+                    - string: {text: , font: *awesome}
+                    - string: {text: , font: *awesome}
+                    - string: {text: , font: *awesome}
+                    - string: {text: , font: *awesome}
+
+    - alsa:
+        card: hw:PCH
+        mixer: Master
+        content: {string: {text: "{percent}"}}
+    - network:
+        name: usb0
+        content:
+          map:
+            tag: carrier
+            values:
+              false: {empty: {}}
+              true:
+                map:
+                  tag: state
+                  default: {string: {text: , font: *awesome, foreground: ffffff66}}
+                  values:
+                    up:
+                      map:
+                        tag: ipv4
+                        default: {string: {text: , font: *awesome}}
+                        values:
+                          "": {string: {text: , font: *awesome, foreground: ffffff66}}
+    - network:
+        name: wlp3s0
+        content:
+          map:
+            on-click: connman-gtk 
+            tag: state
+            default: {string: {text: , font: *awesome, foreground: ffffff66}}
+            values:
+              down: {string: {text: , font: *awesome, foreground: ff0000ff}}
+              up:
+                map:
+                  on-click: connman-gtk 
+                  tag: ipv4
+                  default: {string: {text: , font: *awesome}}
+                  values:
+                    "": {string: {text: , font: *awesome, foreground: ffffff66}}
+    - battery:
+        name: BAT0
+        poll-interval: 30
+        content:
+          map:
+            tag: state
+            values:
+              discharging:
+                - ramp:
+                    tag: capacity
+                    items:
+                      - string: {text: , foreground: ff0000ff, font: *awesome}
+                      - string: {text: , foreground: ffa600ff, font: *awesome}
+                      - string: {text: , font: *awesome}
+                      - string: {text: , font: *awesome}
+                      - string: {text: , font: *awesome}
+                      - string: {text: , font: *awesome}
+                      - string: {text: , font: *awesome}
+                      - string: {text: , font: *awesome}
+                      - string: {text: , font: *awesome}
+                      - string: {text: , foreground: 00ff00ff, font: *awesome}
+                - string: {text: "{capacity}% {estimate}"}
+              charging:
+                - string: {text: , foreground: 00ff00ff, font: *awesome}
+                - string: {text: "{capacity}% {estimate}"}
+              full:
+                - string: {text: , foreground: 00ff00ff, font: *awesome}
+                - string: {text: "{capacity}% full"}
+#    - clock:
+#        time-format: "%H:%M %Z"
+#        content:
+#          - string: {text: , font: *awesome}
+#          - string: {text: "{date}", right-margin: 5}
+#          - string: {text: , font: *awesome}
+#          - string: {text: "{time}"}
+    - label:
+        content:
+          string:
+            on-click: /home/ahmad/.local/bin/wofi-logoutv2.sh  
+            text: " "
+            font: *awesome

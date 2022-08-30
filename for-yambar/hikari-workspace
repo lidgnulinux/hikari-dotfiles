@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+declare workspace
+readonly fname=/home/ahmad/.config/hikari/act-work 
+
+_cycle() {
+
+  printf -- '%s\n' "workspace|string|${workspace}"
+  printf -- '%s\n' ""
+
+}
+
+_cycle
+
+while true; do
+
+  inotifywait -qq --event modify "${fname}"
+  workspace="$(cat "${fname}")"
+
+  _cycle
+
+done
+
+unset -v workspace
